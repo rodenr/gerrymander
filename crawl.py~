@@ -1,35 +1,36 @@
+import sys
+from sys import maxsize
 import itertools
 import pdb
 
+#############################################
+# This function helps determine valid configurations
+#   making continuous subsets in the matrix
 
 def validConfig(thing):
-  flag=False
   storage = [thing.pop()]
 
   while len(thing) != 0:
+
+    #flag=False
 
     chained = list(storage)
     chainLen = len(chained)
 
     for d in chained:
+      # if statements check for valid coordinates of d's neighbors
+      #   that are not yet popped off of thing
       if (d[0],d[1]-1) in thing:
         storage.append((d[0],d[1]-1))
         thing.remove((d[0],d[1]-1))
-        flag=True
 
       if (d[0],d[1]+1) in thing:
         storage.append((d[0],d[1]+1))
         thing.remove((d[0],d[1]+1))
-        flag=True
-
-
 
       if (d[0]-1,d[1]) in thing:
         storage.append((d[0]-1,d[1]))
         thing.remove((d[0]-1,d[1]))
-        flag=True
-
-
 
       if (d[0]+1,d[1]) in thing:
         storage.append((d[0]+1,d[1]))
@@ -59,23 +60,185 @@ def validConfig(thing):
 
 #################################################
 
+#################################
+# Minmax Algorithm
 
-arrays=[(0,1,2,3), (0,1,2,3)]
+def minimax(state, childMoveList, depth, maxPlayer):
+  if depth != 0 and len(childMoveList) == 0:
+    return ['error',[]]
+  if depth == 0:    
+    return [utility(state),list(state[1])]
+  if maxPlayer:
+    bestValAndState = [-maxsize,[]]
+
+    for child in childMoveList:
+
+      newChildList = reduction(child, childMoveList)
+      
+      state[1].append(child)
+      valAndState = minimax(state, newChildList, depth-1, False)
+      
+      
+
+      if valAndState[0] != 'error':
+        #pdb.set_trace()
+        if valAndState[0] > bestValAndState[0]:
+          bestValAndState = list(valAndState)
+        #pdb.set_trace()
+        #bestValue = max([val, bestValue])
+        
+      state[1].remove(child)
+    #if depth == 2: pdb.set_trace()
+
+    return bestValAndState
+
+  else:
+    bestValAndState = [ maxsize,[]]
+
+    for child in childMoveList:
+
+      newChildList = reduction(child, childMoveList)
+
+      state[1].append(child)
+      valAndState = minimax(state, newChildList, depth-1, True)
+
+      if valAndState[0] != 'error':
+        if valAndState[0] < bestValAndState[0]:
+          bestValAndState = list(valAndState)
+        #pdb.set_trace()
+        #bestValue = min([val, bestValue])
+        
+      state[1].remove(child)
+
+    #if depth == 3: pdb.set_trace()
+    return bestValAndState
+
+#################################
+
+#################################
+# Reduction Function
+
+# Based on the new child move, remove
+#   all move options that overlap this choice
+
+def reduction(child, parentList):
+  
+  newChildList = []
+
+  for move in parentList:
+    flag=True
+    for block in child:
+      if block in move:
+        flag=False
+    if flag:
+      newChildList.append(move)
+
+  return newChildList
+
+#################################
+
+#################################
+# Utility Function
+#   When minimax has reached the terminal
+#   node for small it returns winner  or 
+#   the 4th depth of the large neighborhood 
+#   then it returns a heurstic to guess winner
+
+def utility(state):
+  # default
+  neighborhood = state[2]
+  #if state[1] == [[(1, 1), (1, 2), (2, 1), (2, 2)], [(0, 0), (0, 1), (0, 2), (0, 3)], [(1, 0), (2, 0), (3, 0), (3, 1)], [(1, 3), (2, 3), (3, 2), (3, 3)]]:
+  #  pdb.set_trace()
+  dCount=0
+  rCount=0
+  tieCount=0
+  #pdb.set_trace()
+  for district in state[1]:
+    d=0
+    r=0
+    for block in district:
+      # Tally the blocks in a district
+      if neighborhood[block[0]][block[1]] == 'R':
+        r+=1
+      if neighborhood[block[0]][block[1]] == 'D':
+        d+=1
+    # Tally the district wins of the state
+    if d>r:
+      dCount+=1
+    if r>d:
+      rCount+=1
+    if r==d:
+      tieCount+=1
+  # If R is maxPlayer return appropriate value
+  #pdb.set_trace()
+  if state[0] == 'R':
+    if dCount > rCount:
+      return -1
+    elif rCount > dCount: return 1
+  # If D is the maxPlayer return proper value
+  if state[0] == 'D':
+    if dCount > rCount:
+      return 1
+    elif rCount > dCount: return -1
+  # Exhaustive case
+  #if dCount == rCount: return 0
+  if dCount == rCount: 
+    return 0
+
+
+####################################################
+# Reads input file to get matrix
+# Dimensions are taken from this to make permutations of valid configurations
+
+neighborhood = []
+
+f = open(sys.argv[1], 'r')
+
+for line in f:
+    neighborhood.append(line.rsplit())
+print len(neighborhood)
+
+dimension = tuple(range(0, len(neighborhood)))
+
+arrays=[dimension, dimension]
 
 these=list(itertools.product(*arrays))
 
 those=list(itertools.permutations(these, 4))
 
 print len(those)
-
+master = []
 for this in those:
   tmp = list(this)
-  if tmp[0] == (3,3) and tmp[1] == (3,2) and tmp[3] == (0,0):
-    #pdb.set_trace()
   if not validConfig(tmp):
     those.remove(this)
+  else:
+    #pdb.set_trace()
+    sort = list(this)#.sort()
+    sort.sort()
+    if sort not in master:
+      master.append(sort)
+############################################
+testList=[[(0,0),(0,1),(0,2),(0,3)],[(1,0),(1,1),(1,2),(2,0)],[(1,3),(2,1),(2,2),(2,3)],[(3,0),(3,1),(3,2),(3,3)]]
+# Now the Minimax Biz gets serious
+print '*************************************'
+print 'Max=R and Min=D'
+print '*************************************'
+state = ['R',[], neighborhood]
+pdb.set_trace()
+wLT = minimax(state, master, 4, True)
+print wLT
+
+print '*************************************'
+print 'Max=D and Min=R'
+print '*************************************'
+state = ['D',[], neighborhood]
+wLT = minimax(state, master, 4, True)
+print wLT
 
 
-master = those
-print len(master)
-
+'''
+print master[0]
+for pos in master[0]:
+  print neighborhood[pos[0]][pos[1]]
+'''
