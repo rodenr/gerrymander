@@ -134,11 +134,6 @@ def minimax(state, childMoveList, depth, maxPlayer):
     return [utility(state),list(state[1])]
   if maxPlayer:
     bestValAndState = [-maxsize,[]]
-    
-    if len(childMoveList) != 0:
-      for fchild in childMoveList:
-        if not badSubset(state, fchild): childMoveList.remove(fchild)
-          
     for child in childMoveList:
 
       newChildList = reduction(child, childMoveList)
@@ -146,28 +141,24 @@ def minimax(state, childMoveList, depth, maxPlayer):
       state[1].append(child)
       valAndState = minimax(state, newChildList, depth-1, False)
       
-      
-
       if valAndState[0] != 'error':
         #pdb.set_trace()
         if valAndState[0] > bestValAndState[0]:
           bestValAndState = list(valAndState)
-#          print 'max' + str(bestValAndState)
+  #        print str(depth)+'max' + str(bestValAndState)
         #pdb.set_trace()
         #bestValue = max([val, bestValue])
         
       state[1].remove(child)
     #if depth == 2: pdb.set_trace()
-
+    if bestValAndState[0] == -maxsize: bestValAndState[0] = maxsize
     return bestValAndState
 
   else:
     bestValAndState = [ maxsize,[]]
-
-    if len(childMoveList) != 0:
-      for fchild in childMoveList:
-        if not badSubset(state, fchild): childMoveList.remove(fchild)
-
+#    if len(childMoveList) > 1:
+#      for fchild in childMoveList:
+#        if not badSubset(state, fchild): childMoveList.remove(fchild)
     for child in childMoveList:
 
       newChildList = reduction(child, childMoveList)
@@ -177,13 +168,12 @@ def minimax(state, childMoveList, depth, maxPlayer):
 
       if valAndState[0] != 'error':
         if valAndState[0] < bestValAndState[0]:
-          if abs(valAndState[0]) == abs(maxsize):
-            pdb.set_trace()
+          #if abs(valAndState[0]) == abs(maxsize):
+            #pdb.set_trace()
           bestValAndState = list(valAndState)
-#          print 'min'+ str(bestValAndState)
+  #        print str(depth)+'min'+ str(bestValAndState)
         #pdb.set_trace()
         #bestValue = min([val, bestValue])
-        
       state[1].remove(child)
 
     #if depth == 3: pdb.set_trace()
