@@ -9,10 +9,11 @@ import pdb
 
 def validConfig(thing):
   storage = [thing.pop()]
-
+  
   while len(thing) != 0:
 
     #flag=False
+    count = 0
 
     chained = list(storage)
     chainLen = len(chained)
@@ -27,6 +28,7 @@ def validConfig(thing):
       if (d[0],d[1]+1) in thing:
         storage.append((d[0],d[1]+1))
         thing.remove((d[0],d[1]+1))
+
 
       if (d[0]-1,d[1]) in thing:
         storage.append((d[0]-1,d[1]))
@@ -61,16 +63,82 @@ def validConfig(thing):
 #################################################
 
 #################################
+# Invalid Subset Configuration
+
+def badSubset(state, child):
+  #pdb.set_trace()
+  dimension = range(0,4)
+  arrays=[dimension, dimension]
+
+  these=list(itertools.product(*arrays))
+ 
+ # matrix = list(state[2])
+  for district in state[1]:
+    for spot in district:
+      if spot in these: these.remove(spot)
+  for spot in child:
+    if spot in these: these.remove(spot)
+
+  if validOther(these) % 4 != 0:
+    return False
+  else: return True
+#################################
+
+#################################
+# hopefully this won't be here in the end
+
+def validOther(thing):
+  storage = [thing.pop()]
+  
+  while len(thing) != 0:
+
+    #flag=False
+    count = 0
+
+    chained = list(storage)
+    chainLen = len(chained)
+
+    for d in chained:
+      # if statements check for valid coordinates of d's neighbors
+      #   that are not yet popped off of thing
+      if (d[0],d[1]-1) in thing:
+        storage.append((d[0],d[1]-1))
+        thing.remove((d[0],d[1]-1))
+
+      if (d[0],d[1]+1) in thing:
+        storage.append((d[0],d[1]+1))
+        thing.remove((d[0],d[1]+1))
+
+
+      if (d[0]-1,d[1]) in thing:
+        storage.append((d[0]-1,d[1]))
+        thing.remove((d[0]-1,d[1]))
+
+      if (d[0]+1,d[1]) in thing:
+        storage.append((d[0]+1,d[1]))
+        thing.remove((d[0]+1,d[1]))
+
+    
+    if len(storage) == len(chained):
+      return len(storage)#False
+  return len(storage)#True
+#################################
+
+#################################
 # Minmax Algorithm
 
 def minimax(state, childMoveList, depth, maxPlayer):
   if depth != 0 and len(childMoveList) == 0:
     return ['error',[]]
-  if depth == 0:    
+  if depth == 0 and len(childMoveList) == 0:    
     return [utility(state),list(state[1])]
   if maxPlayer:
     bestValAndState = [-maxsize,[]]
-
+    
+    if len(childMoveList) > 1:
+      for fchild in childMoveList:
+        if not badSubset(state, fchild): childMoveList.remove(fchild)
+          
     for child in childMoveList:
 
       newChildList = reduction(child, childMoveList)
@@ -84,6 +152,7 @@ def minimax(state, childMoveList, depth, maxPlayer):
         #pdb.set_trace()
         if valAndState[0] > bestValAndState[0]:
           bestValAndState = list(valAndState)
+#          print 'max' + str(bestValAndState)
         #pdb.set_trace()
         #bestValue = max([val, bestValue])
         
@@ -95,6 +164,10 @@ def minimax(state, childMoveList, depth, maxPlayer):
   else:
     bestValAndState = [ maxsize,[]]
 
+    if len(childMoveList) > 1:
+      for fchild in childMoveList:
+        if not badSubset(state, fchild): childMoveList.remove(fchild)
+
     for child in childMoveList:
 
       newChildList = reduction(child, childMoveList)
@@ -104,7 +177,10 @@ def minimax(state, childMoveList, depth, maxPlayer):
 
       if valAndState[0] != 'error':
         if valAndState[0] < bestValAndState[0]:
+          if abs(valAndState[0]) == abs(maxsize):
+            pdb.set_trace()
           bestValAndState = list(valAndState)
+#          print 'min'+ str(bestValAndState)
         #pdb.set_trace()
         #bestValue = min([val, bestValue])
         
@@ -167,20 +243,20 @@ def utility(state):
       rCount+=1
     if r==d:
       tieCount+=1
-  if state[1] == [[(1, 1), (1, 2), (2, 1), (2, 2)], [(0, 0), (0, 1), (0, 2), (0, 3)], [(1, 0), (2, 0), (3, 0), (3, 1)], [(1, 3), (2, 3), (3, 2), (3, 3)]]:
-    pdb.set_trace()
+  #if state[1] == [[(1, 1), (1, 2), (2, 1), (2, 2)], [(0, 0), (0, 1), (0, 2), (0, 3)], [(1, 0), (2, 0), (3, 0), (3, 1)], [(1, 3), (2, 3), (3, 2), (3, 3)]]:
+  #  pdb.set_trace()
 
   # If R is maxPlayer return appropriate value
   #pdb.set_trace()
   if state[0] == 'R':
     if dCount > rCount:
       return -1
-    elif rCount > dCount: return 1
+    if rCount > dCount: return 1
   # If D is the maxPlayer return proper value
   if state[0] == 'D':
     if dCount > rCount:
       return 1
-    elif rCount > dCount: return -1
+    if rCount > dCount: return -1
   # Exhaustive case
   #if dCount == rCount: return 0
   if dCount == rCount: 
@@ -207,11 +283,11 @@ these=list(itertools.product(*arrays))
 
 those=list(itertools.permutations(these, 4))
 
-print len(those)
+#print len(those)
 master = []
 for this in those:
   tmp = list(this)
-  if not validConfig(tmp):
+  if not validConfig(tmp): #== len(neighborhood):
     those.remove(this)
   else:
     #pdb.set_trace()
@@ -226,7 +302,6 @@ print '*************************************'
 print 'Max=R and Min=D'
 print '*************************************'
 state = ['R',[], neighborhood]
-pdb.set_trace()
 wLT = minimax(state, master, 4, True)
 print wLT
 
