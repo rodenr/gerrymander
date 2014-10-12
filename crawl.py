@@ -255,16 +255,52 @@ def utility(state):
 
 
 ####################################################
-# Reads input file to get matrix
-# Dimensions are taken from this to make permutations of valid configurations
 
+####################################################
+# Reads input file and maps small/large matrix
 neighborhood = []
 
 f = open(sys.argv[1], 'r')
 
 for line in f:
     neighborhood.append(line.rsplit())
-print len(neighborhood)
+#####################################################
+
+
+#####################################################
+
+# Loads the appropriate move list for small/large matrix
+
+master = []
+import csv
+
+
+if sys.argv[1] == "smallNeighborhood.txt":
+  fp = open('master4x4.csv', 'Ur')
+  data_list = []
+  for line in fp:
+    data_list.append(line.strip().split(','))
+  fp.close()
+
+  for numList in data_list:
+    newList = [(int(numList[0]),int(numList[1])), (int(numList[2]),int(numList[3])), (int(numList[4]),int(numList[5])), (int(numList[6]),int(numList[7]))]
+    master.append(newList)
+  del data_list
+else:
+  fp = open('master8x8.csv', 'Ur')
+  data_list = []
+  for line in fp:
+    data_list.append(line.strip().split(','))
+  fp.close()
+
+  for numList in data_list:
+    newList = [(int(numList[0]),int(numList[1])), (int(numList[2]),int(numList[3])), (int(numList[4]),int(numList[5])), (int(numList[6]),int(numList[7])), (int(numList[8]),int(numList[9])), (int(numList[10]),int(numList[11])), (int(numList[12]),int(numList[13])), (int(numList[14]),int(numList[15]))]
+    master.append(newList)
+  del data_list
+
+
+
+'''
 
 dimension = tuple(range(0, len(neighborhood)))
 
@@ -272,9 +308,14 @@ arrays=[dimension, dimension]
 
 these=list(itertools.product(*arrays))
 
-those=list(itertools.permutations(these, 4))
+those=list(itertools.combinations(these, 4))
+
+g = open(sys.argv[2], 'r')
 
 #print len(those)
+
+
+
 master = []
 for this in those:
   tmp = list(this)
@@ -282,30 +323,61 @@ for this in those:
     those.remove(this)
   else:
     #pdb.set_trace()
-    sort = list(this)#.sort()
-    sort.sort()
-    if sort not in master:
-      master.append(sort)
+    #sort = list(this)#.sort()
+    #sort.sort()
+    #if sort not in master:
+    master.append(this)
+
+for part in master:
+  print part
+
+'''
+
+
 ############################################
-testList=[[(0,0),(0,1),(0,2),(0,3)],[(1,0),(1,1),(1,2),(2,0)],[(1,3),(2,1),(2,2),(2,3)],[(3,0),(3,1),(3,2),(3,3)]]
 # Now the Minimax Biz gets serious
+
+# small neighborhood for R as Max
 print '*************************************'
 print 'Max=R and Min=D'
-print '*************************************'
+print ''
 state = ['R',[], neighborhood]
-wLT = minimax(state, master, 4, True)
-print wLT
 
+wLT = minimax(state, master, 8, True)
+if len(neighborhood) == 8:
+  for i in range(1,8):
+    print 'District '+str(i)+str(wLT[1][i-1])
+
+  print ''
+  if wLT[0] == 1:
+    print str(state[0])+' wins the election'
+  elif wLT[0] == 0:
+    print 'IT IS A TIE'
+  elif wLT[0] == -1:
+    print str(state[0])+' lost the election'
+
+
+# small neighborhood for D as Max
 print '*************************************'
 print 'Max=D and Min=R'
-print '*************************************'
+print ''
 state = ['D',[], neighborhood]
-wLT = minimax(state, master, 4, True)
-print wLT
+wLT = minimax(state, master, 8, True)
+if len(neighborhood) == 8:
+  for i in range(1,8):
+    print 'District '+str(i)+str(wLT[1][i-1])
+
+  print ''
+  if wLT[0] == 1:
+    print str(state[0])+' wins the election'
+  elif wLT[0] == 0:
+    print 'IT IS A TIE'
+  elif wLT[0] == -1:
+    print str(state[0])+' lost the election'
 
 
 '''
 print master[0]
 for pos in master[0]:
   print neighborhood[pos[0]][pos[1]]
-'''
+  '''
