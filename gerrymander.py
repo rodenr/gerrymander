@@ -1,7 +1,6 @@
 import sys
 from sys import maxsize
 import itertools
-import pdb
 
 #############################################
 # This function helps determine valid configurations
@@ -129,7 +128,7 @@ def minimax(state, childMoveList, depth, maxPlayer):
       
       # checks for best Max value
       if valAndState[0] != 'error':
-        if valAndState[0] >= bestValAndState[0]:
+        if valAndState[0] > bestValAndState[0]:
           bestValAndState = list(valAndState)
         
       state[1].remove(child)
@@ -384,7 +383,6 @@ print ''
 state = ['R',[], neighborhood]
 
 wLT = minimax(state, master, 4, True)
-pdb.set_trace()
 if len(neighborhood) == 4:
   for i in range(1,len(neighborhood)+1):
     print 'District '+str(i)+str(wLT[1][i-1])

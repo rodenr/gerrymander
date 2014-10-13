@@ -1,7 +1,6 @@
 import sys
 from sys import maxsize
 import itertools
-import pdb
 
 #############################################
 # This function helps determine valid configurations
@@ -55,10 +54,10 @@ def badSubset(district):#state, child):
 
   these=list(itertools.product(*arrays))
  
- # matrix = list(state[2])
-  #for district in state[1]:
-  #  for spot in district:
-  #    if spot in these: these.remove(spot)
+  matrix = list(state[2])
+  for district in state[1]:
+    for spot in district:
+      if spot in these: these.remove(spot)
   for spot in district:
     if spot in these: these.remove(spot)
 
@@ -117,6 +116,7 @@ def minimax(state, childMoveList, depth, maxPlayer):
       return [largeUtility(state), list(state[1])]
   if depth == 0 and len(state[2]) == 4:
       return [utility(state),list(state[1])]
+  # enter in as max player
   if maxPlayer:
     bestValAndState = [-maxsize,[]]
     for child in childMoveList:
@@ -126,24 +126,18 @@ def minimax(state, childMoveList, depth, maxPlayer):
       state[1].append(child)
       valAndState = minimax(state, newChildList, depth-1, False)
       
+      # checks for best Max value
       if valAndState[0] != 'error':
-        # alpha used to be bestValAndState before a-b pruning
-        if valAndState[0] > bestValAndState[0]:
+        if valAndState[0] >= bestValAndState[0]:
           bestValAndState = list(valAndState)
         
       state[1].remove(child)
-      #if beta[0] <= alpha[0]:
-      #  return alpha
-    #if depth == 2: pdb.set_trace()
     if bestValAndState[0] == -maxsize: bestValAndState[0] = maxsize
     return bestValAndState
-#    return bestValAndState
 
+  # enter in as min player
   else:
     bestValAndState = [ maxsize,[]]
-#    if len(childMoveList) > 1:
-#      for fchild in childMoveList:
-#        if not badSubset(state, fchild): childMoveList.remove(fchild)
     for child in childMoveList:
 
       newChildList = reduction(child, childMoveList)
@@ -151,18 +145,12 @@ def minimax(state, childMoveList, depth, maxPlayer):
       state[1].append(child)
       valAndState = minimax(state, newChildList, depth-1, True)
 
+      # checks for best min value
       if valAndState[0] != 'error':
-        # beta used to be bestValAndState before a-b pruning
-        if valAndState[0] < bestValAndState[0]:
-          #if abs(valAndState[0]) == abs(maxsize):
-            #pdb.set_trace()
+        if valAndState[0] <= bestValAndState[0]:
           bestValAndState= list(valAndState)
-        #bestValue = min([val, bestValue])
       state[1].remove(child)
-      #if beta[0] < alpha[0]:
-      #  return beta
 
-    #if depth == 3: pdb.set_trace()
     if bestValAndState[0] == maxsize: bestValAndState[0] = -maxsize
     return bestValAndState
     #return bestValAndState
@@ -395,7 +383,6 @@ print ''
 state = ['R',[], neighborhood]
 
 wLT = minimax(state, master, 4, True)
-pdb.set_trace()
 if len(neighborhood) == 4:
   for i in range(1,len(neighborhood)+1):
     print 'District '+str(i)+str(wLT[1][i-1])
