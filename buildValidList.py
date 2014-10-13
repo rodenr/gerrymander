@@ -1,3 +1,4 @@
+import pdb
 import sys
 import csv
 import itertools
@@ -98,7 +99,7 @@ def validConfig(thing):
 
 # Reads input file to get matrix
 # Dimensions are taken from this to make permutations of valid configurations
-
+'''
 neighborhood = []
 
 f = open(sys.argv[1], 'r')
@@ -127,16 +128,68 @@ for this in those:
     master.append(this)
 
 newMaster = addOn(master, 4)
+print 'holla'
 sixMaster = addOn(newMaster, 5)    
+print 'at'
 sevMaster = addOn(sixMaster, 6)
+print 'yah'
 supMaster = addOn(sevMaster, 7)
+print 'boy'
+shortMaster = []
+
+for move in supMaster:
+  xUniq=[]
+  yUniq=[]
+
+  for spot in move:
+    xUniq.append(spot[0])
+    yUniq.append(spot[1])
+
+  if len(set(xUniq)) == 8 or len(set(yUniq)) == 8:
+    shortMaster.append(move)
+  if len(set(xUniq)) == 4 and len(set(yUniq)) == 2:
+    shortMaster.append(move)
+  if len(set(xUniq)) == 2 and len(set(yUniq)) == 4:
+    shortMaster.append(move)
+'''
+districtZero = ([0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [1, 2])
+newList=[]
+for i in range(0,7):
+  for j in range(0,5):
+    districtZero = ([0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [1, 3])
+ 
+    tmpDist=list(districtZero)
+    for spot in tmpDist:
+      spot[0]+=i
+      spot[1]+=j
+      if tmpDist not in newList:
+        newList.append(tmpDist)
+
+for i in range(0,8):
+  districtZero = ([0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7])
+  tmpDist=list(districtZero)
+  for spot in tmpDist:
+    spot[0]+=i
+  print tmpDist
+  newList.append(tmpDist)
+
+
+full=[]
+for district in newList:
+  full.append(district)
+  tmpDist=[]
+  for spot in district:
+    tmpDist.append([spot[1], spot[0]])
+  if tmpDist not in full:
+    full.append(tmpDist)
+
 
 masterList = []
-for move in supMaster:
+for move in full:
   masterList.append(list(itertools.chain(*list(move))))
 
 
-with open(sys.argv[2], "wb") as f:
+with open(sys.argv[1], "wb") as f:
       writer = csv.writer(f)
       writer.writerows(masterList)
 
